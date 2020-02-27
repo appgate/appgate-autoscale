@@ -21,6 +21,7 @@ SUCH CODE AND/OR SCRIPTS, REGARDLESS OF THE LEGAL THEORY UNDER WHICH SUCH LIABIL
 IS ASSERTED AND REGARDLESS OF WHETHER APPGATE HAS BEEN ADVISED OF THE POSSIBILITY
 OF SUCH LIABILITY.
 # Auto-Scaling AppGate Gateways on Cloud Platforms
+_this is based on version 5.1_
 
 All major cloud platforms provide means of auto-scaling instances using configurable policies.
 It is possible to create a fully auto-scaled deployment of AppGate Gateways on any given site using the features described here.
