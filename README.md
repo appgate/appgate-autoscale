@@ -20,8 +20,7 @@ REVENUE, DATA OR DATA USE, ARISING IN ANY WAY OUT OF THE USE AND/OR REDISTRIBUTI
 SUCH CODE AND/OR SCRIPTS, REGARDLESS OF THE LEGAL THEORY UNDER WHICH SUCH LIABILITY
 IS ASSERTED AND REGARDLESS OF WHETHER APPGATE HAS BEEN ADVISED OF THE POSSIBILITY
 OF SUCH LIABILITY.
-
-# Overview
+# Auto-Scaling AppGate Gateways on Cloud Platforms
 
 All major cloud platforms provide means of auto-scaling instances using configurable policies.
 It is possible to create a fully auto-scaled deployment of AppGate Gateways on any given site using the features described here.
