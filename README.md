@@ -1,7 +1,8 @@
-_this is based on version 5.1_
+_this is based on version 5.4_
+# Auto-Scaling Appgate Gateways on Cloud Platforms
 
 All major cloud platforms provide means of auto-scaling instances using configurable policies.
-It is possible to create a fully auto-scaled deployment of AppGate Gateways on any given site using the features described here.
+It is possible to create a fully auto-scaled deployment of Appgate Gateways on any given site using the features described here.
 
 For example, we can configure a site to auto-scale gateways based on memory or CPU usage.
 It is also possible to use auto-scaling to just aid in automating deployment of gateways with a fixed number of gateways per site.
@@ -24,7 +25,7 @@ See https://docs.microsoft.com/en-us/azure/virtual-machine-scale-sets/overview
 
 ## Before you start
 
-To perform auto-scaling there are a number of things that have to be configured in AppGate SDP first.
+To perform auto-scaling there are a number of things that have to be configured in Appgate SDP first.
 
 #### Configure the auto-scale Appliance
 For any given Site, a auto-scale appliance needs to be specified which will become a basic template and then vary only parameters such as hostname.
@@ -45,7 +46,7 @@ Exempt that user from MFA from the MFA for Admin settings page.
 The auto-scaling script needs rights to view the template appliance for the given site,
 create a new appliance and export it's seed configuration.
 
-We will create an role called siteX-autoscaling.
+We will create a role called siteX-autoscaling.
 And add the following privileges:
 - View appliances tagged with siteX-autoscaling-template and siteX-autoscaling-instance
 - Create appliances with tag siteX-autoscaling-instance
@@ -87,7 +88,7 @@ A Gateway with the `template` tag will always be used first.
 
 #### Cloud Template and Startup Script
 
-The way to make an auto-scaling group on your cloud provider an AppGate SDP Gateway auto-scaling group is to pass an auto-scaling startup script
+The way to make an auto-scaling group on your cloud provider an Appgate SDP Gateway auto-scaling group is to pass an auto-scaling startup script
 containing your specific parameters as a startup script.
 
 We use the following mechanisms on the different cloud platforms:
@@ -101,17 +102,6 @@ We use the following mechanisms on the different cloud platforms:
  However to make the task slightly more convenient we provide a bootstrap command to generate a suitable script.
  The generated script can then be customized if necessary, for example to integrate with a credentials manager.
 
-#### Bootstrapping
-
-Use the script called appgate-autoscale.py to generate a startup script with all your parameters. This script requires python3.
-
-For example:
-
-    # Run the bootstrap script and use the resulting script as your launch configuration userdata.
-    python3 appgate-autoscale.py bootstrap --hostname controller.example.com --port 8443 --username autoscale-admin-site1 --site 750f210a-1c42-4d27-b568-4a8767ef2790 --cacert mycacert.pem --password myautoscaleadminpassword --no-base64-encode --file my_example_upscale_script.py
-
-The Python 3 binary is called python.exe, python on MacOS and python3 on linux.
-
 #### Up-Scaling
 
 If you have setup your instance group correctly with your start script it will be executed on appliance startup and perform up-scaling.
@@ -123,21 +113,18 @@ Inactive appliances tagged with `template` are chosen in priority as the applian
 
 #### Down-Scaling
 
-The bootstrap script will also setup the appliance for down-scaling by creating a shutdown script.
-When the instance is shutdown it will delete its entry on the controller.
-
-It is possible to disable this feature by passing the `--no-downscale-script` option to the bootstrap command.
+When the instance is shutdown it will delete or deactivate its entry on the controller.
 
 #### Sharing the Client Hostname
 
-By default the script will create an appliance configuration using the same hostname for the client hostname as for the peer hostname.
-If you want it to use the client hostname from the template gateway configuration you can pass the `--share-client-hostname` option.
+By default the script will create an appliance configuration using the appliance hostname.
+If you want it to use the unique Client hostname from the template gateway configuration you can pass the `--share-client-hostname` option.
 
 This is especially useful if you have configured your auto-scaling group to use a load balancer.
 
-#### Peer Hostname Conflicts
+#### Appliance Hostname Conflicts
 
-If a gateway with the same peer hostname already exists in the site, the entry will be deleted by the autoscale script.
+If a gateway with the same appliance hostname already exists in the site, the entry will be deleted or deactivated by the autoscale script.
 If the gateway is already activated to the controller the autoscale script will exit and do nothing.
 
 #### Where to find appgate-autoscale.py
@@ -170,7 +157,7 @@ flag to skip the auto-scaling sites. For example:
 
     python3 appgate-upgrade.pyz install --exclude site=750f210a-1c42-4d27-b568-4a8767ef2790 ...
 
-When an new AppGate SDP version is out a new image will be available for your cloud platform.
+When an new Appgate SDP version is out a new image will be available for your cloud platform.
 Point the auto-scaling group to that new image and then terminate the gateway instances running the old version one by one.
 They will be replaced automatically by gateway instances running the new version.
 
@@ -201,7 +188,7 @@ cat >/tmp/password-executable <<EOL
 #!/usr/bin/python3
 import json
 import requests
-r = requests.get('http://my-credential-manager.example.com/my-atuoscaling-secret', params={'token': 'ASDL...ASZSD'})
+r = requests.get('http://my-credential-manager.example.com/my-autoscaling-secret', params={'token': 'ASDL...ASZSD'})
 password = r.json()['data']['password']
 print(json.dumps({"password": password}))
 EOL
@@ -258,3 +245,17 @@ cat >/var/cache/cz-scripts/shutdown-script<<EOL
 /usr/share/admin-scripts/appgate-autoscale.py downscale controller.example.com --port 444 --cacert /tmp/cacert.pem --username siteAWS-autoscaling --password-path /tmp/password-executable
 EOL
 ```
+
+#### Bootstrapping (Deprecated)
+
+The bootstrap command is now deprecated, call upscale and downscale directly instead.
+The script is now available at `/usr/share/admin-scripts/appgate-autoscale.py` directly on the appliance.
+
+Use the script called appgate-autoscale.py to generate a startup script with all your parameters. This script requires python3.
+
+For example:
+
+    # Run the bootstrap script and use the resulting script as your launch configuration userdata.
+    python3 appgate-autoscale.py bootstrap --hostname controller.example.com --port 8443 --username autoscale-admin-site1 --site 750f210a-1c42-4d27-b568-4a8767ef2790 --cacert mycacert.pem --password myautoscaleadminpassword --no-base64-encode --file my_example_upscale_script.py
+
+The Python 3 binary is called python.exe, python on MacOS and python3 on linux.
